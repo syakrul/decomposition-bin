@@ -34,11 +34,6 @@ background-size:cover;
 background-position:center;
 }
 
-/* 🔒 HIDE PAGE UNTIL AUTH CHECK */
-body{
-display:none;
-}
-
 .container{
 
 width:360px;
@@ -162,6 +157,7 @@ Don't have an account? <a href="register.php">Register</a>
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDJ_Uav0JB3TlC5DjZDzwpTI_lwRxaxUmI",
@@ -169,13 +165,15 @@ const firebaseConfig = {
   projectId: "decomposition-bin",
   storageBucket: "decomposition-bin.firebasestorage.app",
   messagingSenderId: "343213480975",
-  appId: "1:343213480975:web:ca029d36c457f93582177a"
+  appId: "1:343213480975:web:ca029d36c457f93582177a",
+  databaseURL: "https://decomposition-bin-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getDatabase(app);
 
-/* 🔥 FIX LOOP AUTH */
+/* FIX LOOP AUTH */
 let authChecked = false;
 
 onAuthStateChanged(auth, (user) => {
@@ -185,8 +183,6 @@ onAuthStateChanged(auth, (user) => {
 
   if (user) {
     window.location.href = "Dashboard.php";
-  } else {
-    document.body.style.display = "flex";
   }
 
 });
@@ -198,7 +194,17 @@ window.login = function() {
   const password = document.getElementById("password").value;
 
   signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
+    .then((userCredential) => {
+
+      const user = userCredential.user;
+
+      /* 🔥 SAVE LOGIN LOG */
+      const logRef = ref(db, "userLogs");
+      push(logRef, {
+        user: user.email,
+        action: "Login",
+        time: new Date().toLocaleString()
+      });
 
       alert("Login Success ✅");
       window.location.href = "Dashboard.php";

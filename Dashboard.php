@@ -125,7 +125,7 @@ document.getElementById("sidebar").classList.toggle("active");
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -139,34 +139,39 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* 🔥 FIX AUTH LOOP */
-let authChecked = false;
-
+/* AUTH CHECK */
 onAuthStateChanged(auth, (user)=>{
-  if(authChecked) return;
-  authChecked = true;
-
   if(!user){
     window.location.href="login.php";
   }
 });
 
-/* LOGOUT */
+/* LOGOUT + SAVE LOG */
 window.logout = function(){
-signOut(auth).then(()=>{
-alert("Logout Success 👋");
-window.location.href="login.php";
-});
+
+  const user = auth.currentUser;
+
+  if(user){
+    const logRef = ref(db, "userLogs");
+    push(logRef, {
+      user: user.email,
+      action: "Logout",
+      time: new Date().toLocaleString()
+    });
+  }
+
+  signOut(auth).then(()=>{
+    window.location.href="login.php";
+  });
 }
 
-/* 🔥 OPTIMIZE DATA */
+/* DATA CONTROL */
 let lastData="";
-let isUpdating=false;
 
 /* DATA */
 let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 
-/* CHART INIT SEKALI */
+/* CHART INIT */
 const createChart=(id,label,dataArr)=> new Chart(document.getElementById(id),{
 type:"line",
 data:{labels:labels,datasets:[{label:label,data:dataArr,borderColor:"white"}]},
@@ -211,18 +216,12 @@ const sensorRef=ref(db,"sensorData");
 
 onValue(sensorRef,(snapshot)=>{
 
-if(isUpdating) return;
-isUpdating=true;
-
 const data=snapshot.val();
-if(!data){ isUpdating=false; return; }
+if(!data) return;
 
-/* STOP LOOP */
+/* STOP DUPLICATE */
 let current=JSON.stringify(data);
-if(current===lastData){
-  isUpdating=false;
-  return;
-}
+if(current===lastData) return;
 lastData=current;
 
 /* UI */
@@ -256,8 +255,6 @@ soilChart.update();
 binChart.update();
 gasChart.update();
 tempChart.update();
-
-setTimeout(()=>{ isUpdating=false; }, 300);
 
 });
 

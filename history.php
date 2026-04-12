@@ -1,5 +1,5 @@
 <?php
-// guna Firebase sahaja (auth.php dah dibuang)
+// guna Firebase sahaja
 ?>
 
 <!DOCTYPE html>
@@ -11,7 +11,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-<!-- 🔒 BLOCK CACHE -->
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -25,9 +24,7 @@ box-sizing:border-box;
 font-family:Poppins;
 }
 
-/* 🔒 HIDE PAGE BEFORE AUTH */
 body{
-display:none;
 background:url("CSS&JS/IMG/GREEN3.jpg");
 background-size:cover;
 background-position:center;
@@ -36,7 +33,6 @@ color:white;
 }
 
 /* MENU BUTTON */
-
 .menu-btn{
 position:fixed;
 top:20px;
@@ -48,27 +44,18 @@ color:black;
 }
 
 /* SIDEBAR */
-
 .sidebar{
-
 position:fixed;
 left:-260px;
 top:0;
-
 width:260px;
 height:100%;
-
 background:rgba(0,0,0,0.35);
 backdrop-filter:blur(15px);
-
 padding-top:80px;
-
 transition:0.4s ease;
-
 box-shadow:0 0 20px rgba(0,0,0,0.4);
-
 z-index:1000;
-
 }
 
 .sidebar.active{
@@ -76,80 +63,55 @@ left:0;
 }
 
 /* SIDEBAR LINKS */
-
 .sidebar a{
-
 display:block;
 padding:18px 35px;
-
 color:white;
 text-decoration:none;
 font-size:18px;
-
 transition:0.3s;
-
 }
 
 .sidebar a:hover{
-
 background:rgba(255,255,255,0.15);
 padding-left:45px;
-
 }
 
-/* MAIN CONTENT */
-
+/* MAIN */
 .main{
-
 text-align:center;
 padding-top:60px;
-
 }
 
 /* HEADER */
-
 .header{
-
 font-size:32px;
 font-weight:600;
 margin-bottom:40px;
 color:black;
-
 }
 
 /* TABLE */
-
 .table-container{
-
 display:flex;
 justify-content:center;
-position:relative;
-z-index:1;
-
 }
 
 table{
-
 width:80%;
 border-collapse:collapse;
-
 background:rgba(0,0,0,0.45);
 backdrop-filter:blur(12px);
-
 }
 
 th,td{
-
 padding:15px;
 border:1px solid rgba(255,255,255,0.4);
 text-align:center;
-
 }
 
 th{
-
 background:rgba(0,0,0,0.6);
-
 }
 
 </style>
@@ -161,12 +123,10 @@ background:rgba(0,0,0,0.6);
 <div class="menu-btn" id="menuBtn" onclick="toggleMenu()">☰</div>
 
 <div class="sidebar" id="sidebar">
-
 <a href="Dashboard.php">Dashboard</a>
 <a href="record.php">Record</a>
 <a href="history.php">History</a>
-<a href="logout.php">Logout</a>
-
+<a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
@@ -178,13 +138,11 @@ LIST USER HISTORY
 <div class="table-container">
 
 <table id="historyTable">
-
 <tr>
 <th>Time</th>
 <th>User</th>
 <th>Action</th>
 </tr>
-
 </table>
 
 </div>
@@ -200,47 +158,18 @@ let btn = document.getElementById("menuBtn");
 
 sidebar.classList.toggle("active");
 
-if(sidebar.classList.contains("active")){
-btn.innerHTML="✕";
-}else{
-btn.innerHTML="☰";
-}
+btn.innerHTML = sidebar.classList.contains("active") ? "✕" : "☰";
 
 }
-
-/* FETCH USER HISTORY */
-
-fetch("API/history.php")
-
-.then(res=>res.json())
-
-.then(data=>{
-
-let table=document.getElementById("historyTable");
-
-data.forEach(row=>{
-
-table.innerHTML+=`
-
-<tr>
-<td>${row.time}</td>
-<td>${row.username}</td>
-<td>${row.action}</td>
-</tr>
-
-`;
-
-});
-
-});
 
 </script>
 
-<!-- 🔥 FIREBASE AUTH CHECK -->
+<!-- 🔥 FIREBASE -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDJ_Uav0JB3TlC5DjZDzwpTI_lwRxaxUmI",
@@ -253,15 +182,54 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 const auth = getAuth(app);
 
+/* AUTH CHECK */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
     window.location.href = "login.php";
-  } else {
-    // ✅ baru display page
-    document.body.style.display = "block";
   }
+});
+
+/* LOGOUT */
+window.logout = function(){
+  signOut(auth).then(()=>{
+    window.location.href="login.php";
+  });
+}
+
+/* LOAD USER LOGS */
+const table = document.getElementById("historyTable");
+const logRef = ref(db, "userLogs");
+
+onValue(logRef, (snapshot)=>{
+
+  const data = snapshot.val();
+  if(!data) return;
+
+  let rows = "";
+
+  Object.values(data).reverse().forEach(row => {
+
+    rows += `
+    <tr>
+      <td>${row.time}</td>
+      <td>${row.user}</td>
+      <td>${row.action}</td>
+    </tr>
+    `;
+
+  });
+
+  table.innerHTML = `
+  <tr>
+    <th>Time</th>
+    <th>User</th>
+    <th>Action</th>
+  </tr>
+  ` + rows;
+
 });
 
 </script>
