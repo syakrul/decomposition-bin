@@ -61,7 +61,6 @@ gap:40px;width:800px;margin:auto;
 background:rgba(0,0,0,0.6);padding:20px;border-radius:15px;
 }
 
-/* 🔔 ALERT BOX */
 #alertBox{
 position:fixed;
 top:20px;
@@ -97,18 +96,15 @@ font-weight:600;
 
 <div class="lastUpdate" id="lastUpdate">Last Update: --</div>
 
-<!-- 🔥 EXPORT BUTTON -->
 <button onclick="exportCSV()" style="padding:10px 20px;border:none;border-radius:10px;cursor:pointer;margin-bottom:20px;">
 Export CSV
 </button>
 
 <div class="cards">
-
 <div class="card"><h3>Soil Moisture</h3><h1 id="soil">0%</h1></div>
 <div class="card"><h3>Bin Level</h3><h1 id="bin">0%</h1></div>
 <div class="card"><h3>Gas Level</h3><h1 id="gas">0</h1></div>
 <div class="card"><h3>Temperature</h3><h1 id="temp">0°C</h1></div>
-
 </div>
 
 <div class="graphs">
@@ -143,11 +139,19 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* AUTH */
+/* 🔥 FIX AUTH LOOP */
+let authChecked = false;
+
 onAuthStateChanged(auth, (user)=>{
-if(!user) window.location.href="login.php";
+  if(authChecked) return;
+  authChecked = true;
+
+  if(!user){
+    window.location.href="login.php";
+  }
 });
 
+/* LOGOUT */
 window.logout = function(){
 signOut(auth).then(()=>{
 alert("Logout Success 👋");
@@ -155,13 +159,14 @@ window.location.href="login.php";
 });
 }
 
-/* 🔥 OPTIMIZE */
+/* 🔥 OPTIMIZE DATA */
 let lastData="";
+let isUpdating=false;
 
 /* DATA */
 let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 
-/* CHART */
+/* CHART INIT SEKALI */
 const createChart=(id,label,dataArr)=> new Chart(document.getElementById(id),{
 type:"line",
 data:{labels:labels,datasets:[{label:label,data:dataArr,borderColor:"white"}]},
@@ -181,9 +186,8 @@ box.style.display="block";
 setTimeout(()=>box.style.display="none",3000);
 }
 
-/* EXPORT CSV */
+/* CSV */
 window.exportCSV = function(){
-
 const sensorRef = ref(db,"sensorData");
 
 onValue(sensorRef,(snapshot)=>{
@@ -200,7 +204,6 @@ a.download="sensor.csv";
 a.click();
 
 },{onlyOnce:true});
-
 }
 
 /* REALTIME */
@@ -208,12 +211,18 @@ const sensorRef=ref(db,"sensorData");
 
 onValue(sensorRef,(snapshot)=>{
 
-const data=snapshot.val();
-if(!data)return;
+if(isUpdating) return;
+isUpdating=true;
 
-/* 🔥 ELak lag */
+const data=snapshot.val();
+if(!data){ isUpdating=false; return; }
+
+/* STOP LOOP */
 let current=JSON.stringify(data);
-if(current===lastData) return;
+if(current===lastData){
+  isUpdating=false;
+  return;
+}
 lastData=current;
 
 /* UI */
@@ -247,6 +256,8 @@ soilChart.update();
 binChart.update();
 gasChart.update();
 tempChart.update();
+
+setTimeout(()=>{ isUpdating=false; }, 300);
 
 });
 
