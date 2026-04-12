@@ -11,7 +11,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-<!-- 🔒 BLOCK CACHE -->
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -25,7 +24,6 @@ box-sizing:border-box;
 font-family:Poppins;
 }
 
-/* 🔒 HIDE PAGE BEFORE AUTH */
 body{
 display:none;
 background:url("CSS&JS/IMG/GREEN2.png");
@@ -190,31 +188,18 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-/* 🔥 REALTIME RECORD */
-const recordRef = ref(db, "records");
+/* 🔥 REALTIME (GUNA sensorData) */
+const recordRef = ref(db, "sensorData");
 
 onValue(recordRef, (snapshot) => {
 
   const data = snapshot.val();
   if(!data) return;
 
-  let rows = "";
-  let id = 1;
+  let condition = "Normal";
 
-  // ✅ LIMIT 10 DATA (ANTI LAG)
-  Object.values(data).slice(-10).reverse().forEach(row => {
-
-    rows += `
-    <tr>
-      <td>${id++}</td>
-      <td>${row.soil_percent}%</td>
-      <td>${row.gas_percent}</td>
-      <td>${row.temperature}°C</td>
-      <td>${row.bin_percent}%</td>
-      <td>${row.compost_condition}</td>
-    </tr>
-    `;
-  });
+  if (data.temperature > 60) condition = "Danger";
+  else if (data.temperature > 40) condition = "Warning";
 
   table.innerHTML = `
   <tr>
@@ -225,7 +210,15 @@ onValue(recordRef, (snapshot) => {
     <th>Bin</th>
     <th>Condition</th>
   </tr>
-  ` + rows;
+  <tr>
+    <td>1</td>
+    <td>${data.soil_percent}%</td>
+    <td>${data.gas_percent}%</td>
+    <td>${data.temperature}°C</td>
+    <td>${data.bin_percent}%</td>
+    <td>${condition}</td>
+  </tr>
+  `;
 
 });
 

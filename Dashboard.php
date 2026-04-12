@@ -9,13 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Poppins;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
 
 body{
 background:url("CSS&JS/IMG/GREEN4.jpg");
@@ -26,103 +20,67 @@ color:white;
 }
 
 .menu-btn{
-position:fixed;
-top:20px;
-left:20px;
-font-size:30px;
-cursor:pointer;
-z-index:1000;
-color:black;
+position:fixed;top:20px;left:20px;font-size:30px;cursor:pointer;z-index:1000;color:black;
 }
 
 .sidebar{
-position:fixed;
-left:-250px;
-top:0;
-width:250px;
-height:100%;
-background:rgba(0,0,0,0.5);
-backdrop-filter:blur(10px);
-padding-top:80px;
-transition:0.4s;
+position:fixed;left:-250px;top:0;width:250px;height:100%;
+background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);
+padding-top:80px;transition:0.4s;
 }
 
 .sidebar a{
-display:block;
-padding:15px 30px;
-color:white;
-text-decoration:none;
-font-size:18px;
+display:block;padding:15px 30px;color:white;text-decoration:none;font-size:18px;
 }
 
-.sidebar a:hover{
-background:rgba(255,255,255,0.2);
-}
+.sidebar a:hover{background:rgba(255,255,255,0.2);}
+.sidebar.active{left:0;}
 
-.sidebar.active{
-left:0;
-}
+.main{text-align:center;padding-top:40px;}
 
-.main{
-text-align:center;
-padding-top:40px;
-}
-
-.title{
-font-size:28px;
-font-weight:600;
-margin-bottom:10px;
-}
-
-.lastUpdate{
-font-size:14px;
-color:#ddd;
-margin-bottom:30px;
-}
+.title{font-size:28px;font-weight:600;margin-bottom:10px;}
+.lastUpdate{font-size:14px;color:#ddd;margin-bottom:30px;}
 
 .cards{
-display:flex;
-justify-content:center;
-gap:40px;
-margin-bottom:60px;
-flex-wrap:wrap;
+display:flex;justify-content:center;gap:40px;margin-bottom:60px;flex-wrap:wrap;
 }
 
 .card{
-width:180px;
-padding:30px;
-background:rgba(0,0,0,0.6);
-backdrop-filter:blur(10px);
-border-radius:15px;
+width:180px;padding:30px;background:rgba(0,0,0,0.6);
+backdrop-filter:blur(10px);border-radius:15px;
 }
 
-.card h3{
-margin-bottom:10px;
-}
-
-.card h1{
-font-size:40px;
-}
+.card h1{font-size:40px;}
 
 .graphs{
-display:grid;
-grid-template-columns: repeat(2, 1fr);
-gap:40px;
-width:800px;
-margin:auto;
+display:grid;grid-template-columns: repeat(2, 1fr);
+gap:40px;width:800px;margin:auto;
 }
 
 .graph{
-background:rgba(0,0,0,0.6);
-padding:20px;
-border-radius:15px;
+background:rgba(0,0,0,0.6);padding:20px;border-radius:15px;
 }
 
+/* 🔔 ALERT BOX */
+#alertBox{
+position:fixed;
+top:20px;
+right:20px;
+background:red;
+color:white;
+padding:15px 20px;
+border-radius:10px;
+display:none;
+z-index:9999;
+font-weight:600;
+}
 </style>
 
 </head>
 
 <body>
+
+<div id="alertBox">⚠️ ALERT</div>
 
 <div class="menu-btn" onclick="toggleMenu()">☰</div>
 
@@ -135,56 +93,29 @@ border-radius:15px;
 
 <div class="main">
 
-<div class="title">
-Compost Monitoring Dashboard
-</div>
+<div class="title">Compost Monitoring Dashboard</div>
 
-<div class="lastUpdate" id="lastUpdate">
-Last Update: --
-</div>
+<div class="lastUpdate" id="lastUpdate">Last Update: --</div>
+
+<!-- 🔥 EXPORT BUTTON -->
+<button onclick="exportCSV()" style="padding:10px 20px;border:none;border-radius:10px;cursor:pointer;margin-bottom:20px;">
+Export CSV
+</button>
 
 <div class="cards">
 
-<div class="card">
-<h3>Soil Moisture</h3>
-<h1 id="soil">0%</h1>
-</div>
-
-<div class="card">
-<h3>Bin Level</h3>
-<h1 id="bin">0%</h1>
-</div>
-
-<div class="card">
-<h3>Gas Level</h3>
-<h1 id="gas">0</h1>
-</div>
-
-<div class="card">
-<h3>Temperature</h3>
-<h1 id="temp">0°C</h1>
-</div>
+<div class="card"><h3>Soil Moisture</h3><h1 id="soil">0%</h1></div>
+<div class="card"><h3>Bin Level</h3><h1 id="bin">0%</h1></div>
+<div class="card"><h3>Gas Level</h3><h1 id="gas">0</h1></div>
+<div class="card"><h3>Temperature</h3><h1 id="temp">0°C</h1></div>
 
 </div>
 
 <div class="graphs">
-
-<div class="graph">
-<canvas id="soilChart"></canvas>
-</div>
-
-<div class="graph">
-<canvas id="binChart"></canvas>
-</div>
-
-<div class="graph">
-<canvas id="gasChart"></canvas>
-</div>
-
-<div class="graph">
-<canvas id="tempChart"></canvas>
-</div>
-
+<div class="graph"><canvas id="soilChart"></canvas></div>
+<div class="graph"><canvas id="binChart"></canvas></div>
+<div class="graph"><canvas id="gasChart"></canvas></div>
+<div class="graph"><canvas id="tempChart"></canvas></div>
 </div>
 
 </div>
@@ -195,111 +126,127 @@ document.getElementById("sidebar").classList.toggle("active");
 }
 </script>
 
-<!-- 🔥 FIREBASE + REALTIME -->
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyDJ_Uav0JB3TlC5DjZDzwpTI_lwRxaxUmI",
+  apiKey: "AIzaSy...",
   authDomain: "decomposition-bin.firebaseapp.com",
   databaseURL: "https://decomposition-bin-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "decomposition-bin",
-  storageBucket: "decomposition-bin.firebasestorage.app",
-  messagingSenderId: "343213480975",
-  appId: "1:343213480975:web:ca029d36c457f93582177a"
+  projectId: "decomposition-bin"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* AUTH CHECK */
-onAuthStateChanged(auth, (user) => {
-  if (!user) {
-    window.location.href = "login.php";
-  }
+/* AUTH */
+onAuthStateChanged(auth, (user)=>{
+if(!user) window.location.href="login.php";
 });
 
-/* LOGOUT */
 window.logout = function(){
-  signOut(auth).then(()=>{
-    alert("Logout Success 👋");
-    window.location.href="login.php";
-  });
+signOut(auth).then(()=>{
+alert("Logout Success 👋");
+window.location.href="login.php";
+});
 }
+
+/* 🔥 OPTIMIZE */
+let lastData="";
 
 /* DATA */
-let soilData=[], binData=[], gasData=[], tempData=[], labels=[];
+let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 
 /* CHART */
-const createChart=(id,label,dataArr)=>{
-return new Chart(document.getElementById(id),{
+const createChart=(id,label,dataArr)=> new Chart(document.getElementById(id),{
 type:"line",
-data:{
-labels:labels,
-datasets:[{
-label:label,
-data:dataArr,
-borderColor:"white",
-backgroundColor:"rgba(255,255,255,0.2)",
-tension:0.4
-}]
-},
-options:{
-plugins:{legend:{labels:{color:"white"}}},
-scales:{
-x:{ticks:{color:"white"},grid:{color:"rgba(255,255,255,0.2)"}},
-y:{ticks:{color:"white"},grid:{color:"rgba(255,255,255,0.2)"}}
-}
-}
+data:{labels:labels,datasets:[{label:label,data:dataArr,borderColor:"white"}]},
+options:{plugins:{legend:{labels:{color:"white"}}}}
 });
-}
 
 const soilChart=createChart("soilChart","Soil %",soilData);
 const binChart=createChart("binChart","Bin %",binData);
 const gasChart=createChart("gasChart","Gas %",gasData);
 const tempChart=createChart("tempChart","Temp °C",tempData);
 
-/* REALTIME DATA */
-const sensorRef = ref(db, "sensorData");
+/* ALERT */
+function showAlert(msg){
+const box=document.getElementById("alertBox");
+box.innerText=msg;
+box.style.display="block";
+setTimeout(()=>box.style.display="none",3000);
+}
 
-onValue(sensorRef, (snapshot) => {
+/* EXPORT CSV */
+window.exportCSV = function(){
 
-  const data = snapshot.val();
-  if(!data) return;
+const sensorRef = ref(db,"sensorData");
 
-  document.getElementById("soil").innerText = data.soil_percent + "%";
-  document.getElementById("bin").innerText = data.bin_percent + "%";
-  document.getElementById("gas").innerText = data.gas_percent;
-  document.getElementById("temp").innerHTML = data.temperature + "°C";
+onValue(sensorRef,(snapshot)=>{
+const d=snapshot.val();
+if(!d)return;
 
-  document.getElementById("lastUpdate").innerText =
-  "Last Update: " + new Date().toLocaleString();
+let csv="Soil,Gas,Temperature,Bin\n";
+csv+=`${d.soil_percent},${d.gas_percent},${d.temperature},${d.bin_percent}`;
 
-  let time = new Date().toLocaleTimeString();
+const blob=new Blob([csv],{type:"text/csv"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="sensor.csv";
+a.click();
 
-  labels.push(time);
-  soilData.push(data.soil_percent);
-  binData.push(data.bin_percent);
-  gasData.push(data.gas_percent);
-  tempData.push(data.methane_ppm);
+},{onlyOnce:true});
 
-  if(labels.length>10){
-    labels.shift();
-    soilData.shift();
-    binData.shift();
-    gasData.shift();
-    tempData.shift();
-  }
+}
 
-  soilChart.update();
-  binChart.update();
-  gasChart.update();
-  tempChart.update();
+/* REALTIME */
+const sensorRef=ref(db,"sensorData");
+
+onValue(sensorRef,(snapshot)=>{
+
+const data=snapshot.val();
+if(!data)return;
+
+/* 🔥 ELak lag */
+let current=JSON.stringify(data);
+if(current===lastData) return;
+lastData=current;
+
+/* UI */
+document.getElementById("soil").innerText=data.soil_percent+"%";
+document.getElementById("bin").innerText=data.bin_percent+"%";
+document.getElementById("gas").innerText=data.gas_percent;
+document.getElementById("temp").innerText=data.temperature+"°C";
+
+document.getElementById("lastUpdate").innerText=
+"Last Update: "+new Date().toLocaleString();
+
+/* ALERT */
+if(data.temperature>60) showAlert("🔥 Temperature High!");
+if(data.gas_percent>70) showAlert("⚠️ Gas High!");
+
+/* GRAPH */
+let time=new Date().toLocaleTimeString();
+
+labels.push(time);
+soilData.push(data.soil_percent);
+binData.push(data.bin_percent);
+gasData.push(data.gas_percent);
+tempData.push(data.temperature);
+
+/* LIMIT */
+if(labels.length>10){
+labels.shift();soilData.shift();binData.shift();gasData.shift();tempData.shift();
+}
+
+soilChart.update();
+binChart.update();
+gasChart.update();
+tempChart.update();
 
 });
 
