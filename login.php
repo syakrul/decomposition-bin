@@ -11,7 +11,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
-<!-- 🔒 BLOCK CACHE (ANTI BACK BUTTON) -->
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
@@ -176,14 +175,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-/* 🔥 AUTO REDIRECT JIKA DAH LOGIN */
+/* 🔥 FIX LOOP AUTH */
+let authChecked = false;
+
 onAuthStateChanged(auth, (user) => {
+
+  if(authChecked) return;
+  authChecked = true;
+
   if (user) {
     window.location.href = "Dashboard.php";
   } else {
-    // ✅ baru tunjuk page login
     document.body.style.display = "flex";
   }
+
 });
 
 /* LOGIN FUNCTION */
@@ -193,7 +198,7 @@ window.login = function() {
   const password = document.getElementById("password").value;
 
   signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
+    .then(() => {
 
       alert("Login Success ✅");
       window.location.href = "Dashboard.php";
