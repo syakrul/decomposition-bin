@@ -12,7 +12,7 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
 
 body{
-background:url("CSS&JS/IMG/GREEN4.jpg");
+background:url("CSS&JS/IMG/INSIDE.jpeg");
 background-size:cover;
 background-position:center;
 background-attachment:fixed;

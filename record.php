@@ -25,7 +25,7 @@ font-family:Poppins;
 }
 
 body{
-background:url("CSS&JS/IMG/GREEN2.png");
+background:url("CSS&JS/IMG/INSIDE.png");
 background-size:cover;
 background-position:center;
 background-attachment:fixed;
