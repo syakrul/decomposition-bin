@@ -173,18 +173,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* FIX LOOP AUTH */
-let authChecked = false;
-
+/* 🔥 FIX LOOP (JANGAN REDIRECT SINI) */
 onAuthStateChanged(auth, (user) => {
-
-  if(authChecked) return;
-  authChecked = true;
-
-  if (user) {
-    window.location.href = "Dashboard.php";
-  }
-
+  // kosong - jangan redirect
 });
 
 /* LOGIN FUNCTION */
@@ -198,16 +189,19 @@ window.login = function() {
 
       const user = userCredential.user;
 
-      /* 🔥 SAVE LOGIN LOG */
-      const logRef = ref(db, "userLogs");
-      push(logRef, {
+      /* SAVE LOGIN LOG */
+      push(ref(db, "userLogs"), {
         user: user.email,
         action: "Login",
         time: new Date().toLocaleString()
       });
 
       alert("Login Success ✅");
-      window.location.href = "Dashboard.php";
+
+      /* 🔥 DELAY UNTUK ELAK LOOP */
+      setTimeout(()=>{
+        window.location.href = "Dashboard.php";
+      }, 800);
 
     })
     .catch((error) => {

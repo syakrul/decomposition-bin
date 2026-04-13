@@ -25,7 +25,6 @@ font-family:Poppins;
 }
 
 body{
-display:none;
 background:url("CSS&JS/IMG/GREEN2.png");
 background-size:cover;
 background-position:center;
@@ -121,7 +120,7 @@ background:rgba(0,0,0,0.6);
 <a href="Dashboard.php">Dashboard</a>
 <a href="record.php">Record</a>
 <a href="history.php">History</a>
-<a href="logout.php">Logout</a>
+<a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
@@ -161,7 +160,7 @@ btn.innerHTML = sidebar.classList.contains("active") ? "✕" : "☰";
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDJ_Uav0JB3TlC5DjZDzwpTI_lwRxaxUmI",
@@ -179,19 +178,29 @@ const auth = getAuth(app);
 
 const table = document.getElementById("recordTable");
 
-/* 🔒 AUTH CHECK */
+/* 🔥 ANTI LOOP AUTH */
+let checked = false;
+
 onAuthStateChanged(auth, (user) => {
+
+  if(checked) return;
+  checked = true;
+
   if (!user) {
     window.location.href = "login.php";
-  } else {
-    document.body.style.display = "block";
   }
+
 });
 
-/* 🔥 REALTIME (GUNA sensorData) */
-const recordRef = ref(db, "sensorData");
+/* LOGOUT */
+window.logout = function(){
+  signOut(auth).then(()=>{
+    window.location.href="login.php";
+  });
+}
 
-onValue(recordRef, (snapshot) => {
+/* 🔥 REALTIME */
+onValue(ref(db, "sensorData"), (snapshot) => {
 
   const data = snapshot.val();
   if(!data) return;

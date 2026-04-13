@@ -185,11 +185,18 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* AUTH CHECK */
+/* 🔥 ANTI LOOP AUTH */
+let checked = false;
+
 onAuthStateChanged(auth, (user) => {
+
+  if(checked) return;
+  checked = true;
+
   if (!user) {
     window.location.href = "login.php";
   }
+
 });
 
 /* LOGOUT */
@@ -201,9 +208,8 @@ window.logout = function(){
 
 /* LOAD USER LOGS */
 const table = document.getElementById("historyTable");
-const logRef = ref(db, "userLogs");
 
-onValue(logRef, (snapshot)=>{
+onValue(ref(db, "userLogs"), (snapshot)=>{
 
   const data = snapshot.val();
   if(!data) return;

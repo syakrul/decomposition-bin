@@ -93,7 +93,6 @@ font-weight:600;
 <div class="main">
 
 <div class="title">Compost Monitoring Dashboard</div>
-
 <div class="lastUpdate" id="lastUpdate">Last Update: --</div>
 
 <button onclick="exportCSV()" style="padding:10px 20px;border:none;border-radius:10px;cursor:pointer;margin-bottom:20px;">
@@ -139,21 +138,27 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* AUTH CHECK */
+/* 🔥 FIX LOOP (IMPORTANT) */
+let checked = false;
+
 onAuthStateChanged(auth, (user)=>{
+
+  if(checked) return;
+  checked = true;
+
   if(!user){
-    window.location.href="login.php";
+    window.location.href = "login.php";
   }
+
 });
 
-/* LOGOUT + SAVE LOG */
+/* LOGOUT */
 window.logout = function(){
 
   const user = auth.currentUser;
 
   if(user){
-    const logRef = ref(db, "userLogs");
-    push(logRef, {
+    push(ref(db, "userLogs"), {
       user: user.email,
       action: "Logout",
       time: new Date().toLocaleString()
@@ -171,7 +176,7 @@ let lastData="";
 /* DATA */
 let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 
-/* CHART INIT */
+/* CHART */
 const createChart=(id,label,dataArr)=> new Chart(document.getElementById(id),{
 type:"line",
 data:{labels:labels,datasets:[{label:label,data:dataArr,borderColor:"white"}]},
@@ -193,9 +198,7 @@ setTimeout(()=>box.style.display="none",3000);
 
 /* CSV */
 window.exportCSV = function(){
-const sensorRef = ref(db,"sensorData");
-
-onValue(sensorRef,(snapshot)=>{
+onValue(ref(db,"sensorData"),(snapshot)=>{
 const d=snapshot.val();
 if(!d)return;
 
@@ -212,14 +215,12 @@ a.click();
 }
 
 /* REALTIME */
-const sensorRef=ref(db,"sensorData");
-
-onValue(sensorRef,(snapshot)=>{
+onValue(ref(db,"sensorData"),(snapshot)=>{
 
 const data=snapshot.val();
 if(!data) return;
 
-/* STOP DUPLICATE */
+/* prevent duplicate */
 let current=JSON.stringify(data);
 if(current===lastData) return;
 lastData=current;
@@ -246,7 +247,6 @@ binData.push(data.bin_percent);
 gasData.push(data.gas_percent);
 tempData.push(data.temperature);
 
-/* LIMIT */
 if(labels.length>10){
 labels.shift();soilData.shift();binData.shift();gasData.shift();tempData.shift();
 }
