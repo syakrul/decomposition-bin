@@ -12,6 +12,7 @@
 *{margin:0;padding:0;box-sizing:border-box;font-family:Poppins;}
 
 body{
+display:none;
 background:url("CSS&JS/IMG/INSIDE.jpeg");
 background-size:cover;
 background-position:center;
@@ -138,7 +139,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* 🔥 FIX LOOP (IMPORTANT) */
+/* 🔥 FINAL AUTH FIX */
 let checked = false;
 
 onAuthStateChanged(auth, (user)=>{
@@ -146,7 +147,9 @@ onAuthStateChanged(auth, (user)=>{
   if(checked) return;
   checked = true;
 
-  if(!user){
+  if(user){
+    document.body.style.display = "block";
+  }else{
     window.location.href = "login.php";
   }
 
@@ -170,13 +173,10 @@ window.logout = function(){
   });
 }
 
-/* DATA CONTROL */
+/* REALTIME DATA */
 let lastData="";
-
-/* DATA */
 let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 
-/* CHART */
 const createChart=(id,label,dataArr)=> new Chart(document.getElementById(id),{
 type:"line",
 data:{labels:labels,datasets:[{label:label,data:dataArr,borderColor:"white"}]},
@@ -188,7 +188,6 @@ const binChart=createChart("binChart","Bin %",binData);
 const gasChart=createChart("gasChart","Gas %",gasData);
 const tempChart=createChart("tempChart","Temp °C",tempData);
 
-/* ALERT */
 function showAlert(msg){
 const box=document.getElementById("alertBox");
 box.innerText=msg;
@@ -196,7 +195,6 @@ box.style.display="block";
 setTimeout(()=>box.style.display="none",3000);
 }
 
-/* CSV */
 window.exportCSV = function(){
 onValue(ref(db,"sensorData"),(snapshot)=>{
 const d=snapshot.val();
@@ -214,18 +212,15 @@ a.click();
 },{onlyOnce:true});
 }
 
-/* REALTIME */
 onValue(ref(db,"sensorData"),(snapshot)=>{
 
 const data=snapshot.val();
 if(!data) return;
 
-/* prevent duplicate */
 let current=JSON.stringify(data);
 if(current===lastData) return;
 lastData=current;
 
-/* UI */
 document.getElementById("soil").innerText=data.soil_percent+"%";
 document.getElementById("bin").innerText=data.bin_percent+"%";
 document.getElementById("gas").innerText=data.gas_percent;
@@ -234,11 +229,9 @@ document.getElementById("temp").innerText=data.temperature+"°C";
 document.getElementById("lastUpdate").innerText=
 "Last Update: "+new Date().toLocaleString();
 
-/* ALERT */
 if(data.temperature>60) showAlert("🔥 Temperature High!");
 if(data.gas_percent>70) showAlert("⚠️ Gas High!");
 
-/* GRAPH */
 let time=new Date().toLocaleTimeString();
 
 labels.push(time);
