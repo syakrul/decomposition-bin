@@ -139,18 +139,20 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-/* 🔥 FINAL AUTH FIX */
-let checked = false;
+/* 🔥 FINAL AUTH FIX (NO MORE KICK OUT) */
+document.body.style.display = "none";
 
 onAuthStateChanged(auth, (user)=>{
 
-  if(checked) return;
-  checked = true;
+  if(user === null){
+    // Firebase belum ready → jangan buat apa-apa
+    return;
+  }
 
-  if(user){
-    document.body.style.display = "block";
-  }else{
+  if(!user){
     window.location.href = "login.php";
+  }else{
+    document.body.style.display = "block";
   }
 
 });
@@ -173,7 +175,7 @@ window.logout = function(){
   });
 }
 
-/* REALTIME DATA */
+/* REALTIME DATA (UNCHANGED) */
 let lastData="";
 let soilData=[],binData=[],gasData=[],tempData=[],labels=[];
 

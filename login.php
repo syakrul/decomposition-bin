@@ -156,7 +156,7 @@ Don't have an account? <a href="register.php">Register</a>
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -173,12 +173,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-/* 🔥 FIX LOOP (JANGAN REDIRECT SINI) */
-onAuthStateChanged(auth, (user) => {
-  // kosong - jangan redirect
-});
-
-/* LOGIN FUNCTION */
+/* LOGIN FUNCTION (FINAL FIX) */
 window.login = function() {
 
   const email = document.getElementById("email").value;
@@ -196,12 +191,13 @@ window.login = function() {
         time: new Date().toLocaleString()
       });
 
-      alert("Login Success ✅");
-
-      /* 🔥 DELAY UNTUK ELAK LOOP */
-      setTimeout(()=>{
-        window.location.href = "Dashboard.php";
-      }, 800);
+      /* 🔥 WAIT FIREBASE CONFIRM LOGIN */
+      const unsubscribe = auth.onAuthStateChanged((u)=>{
+        if(u){
+          unsubscribe(); // stop listener
+          window.location.href = "Dashboard.php";
+        }
+      });
 
     })
     .catch((error) => {
